@@ -10,3 +10,4 @@ All notable template changes are documented here using Keep a Changelog conventi
 - Validated public site configuration, safe origins and base paths, optional locale settings, and a build-only Markdown brief reader.
 - Minimal demo page and setup, architecture, and dependency decision documentation.
 - Typed pages, posts, and projects with ISO-date and image validation, deterministic draft filtering, isolated content-build tests, and clearly marked demonstration content.
+- Centralized published content routes, base-aware locale URLs, optional translation fallback, validated UI dictionaries, and script-aware text direction.

@@ -9,4 +9,13 @@ export default defineConfig({
   base: site.base,
   output: 'static',
   integrations: [mdx()],
+  ...(site.features.i18n
+    ? {
+        i18n: {
+          defaultLocale: site.i18n.defaultLocale,
+          locales: site.i18n.locales,
+          routing: { prefixDefaultLocale: false },
+        },
+      }
+    : {}),
 });
