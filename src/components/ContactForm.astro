@@ -1,0 +1,146 @@
+---
+import type { UiStrings } from '../lib/i18n/ui.ts';
+interface Props {
+  endpoint: string;
+  ui: UiStrings;
+}
+const { endpoint, ui } = Astro.props;
+const copy = ui.contact;
+const configured = Boolean(endpoint.trim());
+const fields = ['name', 'email', 'message'] as const;
+---
+
+<form
+  class="contact-form"
+  data-contact-form
+  method="post"
+  action={configured ? endpoint : undefined}
+  aria-labelledby="contact-legend"
+  data-invalid-message={copy.invalid}
+  data-spam-message={copy.spam}
+>
+  {!configured && <p>{copy.unconfigured}</p>}
+  <fieldset disabled={!configured}>
+    <legend id="contact-legend">{copy.legend}</legend>
+    <p>{copy.required}</p>
+    {fields.map((name) => (
+      <div class="contact-field">
+        <label for={`contact-${name}`}>{copy.fields[name].label}</label>
+        {name === 'message' ? (
+          <textarea
+            id={`contact-${name}`}
+            name={name}
+            rows="6"
+            required
+            aria-describedby={`contact-${name}-error`}
+            data-required-message={copy.fields[name].required}
+          />
+        ) : (
+          <input
+            id={`contact-${name}`}
+            name={name}
+            type={name === 'email' ? 'email' : 'text'}
+            autocomplete={name}
+            required
+            aria-describedby={`contact-${name}-error`}
+            data-required-message={copy.fields[name].required}
+            data-invalid-message={
+              name === 'email' ? copy.fields.email.invalid : undefined
+            }
+          />
+        )}
+        <p
+          id={`contact-${name}-error`}
+          class="contact-error"
+          data-error-for={name}
+          aria-live="polite"
+          aria-atomic="true"
+        />
+      </div>
+    ))}
+    <div class="contact-trap" aria-hidden="true">
+      <label for="contact-website">{copy.website}</label>
+      <input
+        id="contact-website"
+        name="website"
+        type="text"
+        tabindex="-1"
+        aria-hidden="true"
+        autocomplete="off"
+      />
+    </div>
+    <button type="submit" disabled={!configured}>
+      {copy.submit}
+    </button>
+  </fieldset>
+  <p data-contact-status role="status" aria-atomic="true" />
+</form>
+
+<script>
+  import { installContactFormLifecycle } from '../scripts/contact-form.ts';
+  installContactFormLifecycle(document);
+</script>
+
+<style>
+  .contact-form {
+    max-inline-size: var(--width-reading);
+    margin-block-start: var(--space-lg);
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-inline-size: 0;
+  }
+  legend {
+    font-size: var(--font-size-heading);
+    font-weight: var(--weight-heading);
+    margin-block-end: var(--space-sm);
+  }
+  .contact-field {
+    margin-block-end: var(--space-md);
+  }
+  label {
+    display: block;
+    margin-block-end: var(--space-xs);
+    font-weight: var(--weight-heading);
+  }
+  input,
+  textarea,
+  button {
+    font: inherit;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: 0;
+    padding: var(--space-sm);
+  }
+  input,
+  textarea {
+    inline-size: 100%;
+  }
+  textarea {
+    display: block;
+    resize: vertical;
+  }
+  button {
+    cursor: pointer;
+  }
+  :disabled {
+    cursor: not-allowed;
+  }
+  .contact-error {
+    margin-block: var(--space-xs) 0;
+    font-size: var(--font-size-small);
+  }
+  [aria-invalid='true'] {
+    border-color: var(--color-text);
+  }
+  .contact-trap {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+</style>

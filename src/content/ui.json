@@ -38,5 +38,29 @@
   },
   "notFound": {
     "returnHome": "Return to the home page"
+  },
+  "contact": {
+    "legend": "Send a message",
+    "required": "All fields are required.",
+    "submit": "Send message",
+    "website": "Website",
+    "unconfigured": "Contact form is not configured yet.",
+    "invalid": "Please review the highlighted fields.",
+    "spam": "Unable to submit this message.",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "required": "Enter your name."
+      },
+      "email": {
+        "label": "Email",
+        "required": "Enter your email address.",
+        "invalid": "Enter a valid email address."
+      },
+      "message": {
+        "label": "Message",
+        "required": "Enter a message."
+      }
+    }
   }
 }

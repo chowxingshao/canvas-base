@@ -14,3 +14,4 @@ All notable template changes are documented here using Keep a Changelog conventi
 - Replaceable editorial demonstration pages, manifest-driven navigation and language switching, accessible static layouts, self-hosted licensed Source Sans 3, system light/dark tokens, and real HTML route-output tests.
 
 - Safe config-derived metadata and JSON-LD, canonical translation discovery, base-aware sitemap and robots, gated plain-text RSS, and ordered cleanup of private build artifacts with real HTML/XML fixtures.
+- Accessible contact form with public endpoint configuration, native POST and no-JavaScript validation, local error feedback, a hidden honeypot, and Astro navigation cleanup.

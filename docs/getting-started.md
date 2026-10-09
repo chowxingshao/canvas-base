@@ -12,4 +12,12 @@ Write the client brief in root `brief.md`. The build-only reader returns the ori
 
 Use `pnpm format` while editing. Before completing a change, run `pnpm test`, `pnpm lint`, `pnpm check`, and `pnpm build`. Then `pnpm preview` serves `dist/`. The README documents all seven scripts.
 
-This task supplies a minimal HTML demo. Additional collections, SEO, motion, forms, Docker, and deployment workflows arrive in their corresponding tasks. A flag being enabled does not add those modules by itself. The default OG image path is a configuration value; supply the actual image during the asset/SEO work.
+This task supplies a minimal HTML demo. Additional motion, Docker, and deployment workflows arrive in their corresponding tasks. A flag being enabled does not add those modules by itself. The default OG image path is a configuration value; supply the actual image during the asset/SEO work.
+
+## Configure the contact form
+
+The contact page shows a disabled form and `Contact form is not configured yet.` until `formEndpoint` has a public HTTP(S) submission URL. Set it in `site.config.ts` and rebuild to enable native POST submission. No secret key belongs in this public configuration.
+
+Edit labels, required-field messages, and validation announcements under `contact` in `src/content/ui.json`, or the matching locale dictionary when internationalization is enabled. Contact page prose lives in `src/content/pages/en/contact.md`. The name, email, and message fields are required, and `website` is a hidden honeypot excluded from keyboard navigation and accessibility exposure.
+
+Select a provider and follow its field naming, confirmation, and spam protection requirements in [deployment guidance](deployment.md). Providers must validate submissions server-side and enforce their own honeypot rules; the generic endpoint and local validation do not guarantee spam protection. Use intercepted local submissions during starter testing.

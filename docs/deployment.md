@@ -1,0 +1,11 @@
+# Contact form deployment
+
+Set `formEndpoint` in `site.config.ts` to the provider's public HTTP(S) submission URL, then rebuild the static site. This value is shipped in HTML; do not put secret keys, credentials, or private tokens in it. Leave it empty to show a disabled form with the configuration notice.
+
+The configured form submits a native POST directly to the provider. It works with browser validation when JavaScript is disabled; optional local enhancement provides linked errors, an announcement, and focus on the first invalid field. The script does not fetch, log, or store submitted values. The provider controls delivery, confirmation pages, redirects, error responses, retention, and any consent requirements. Configure those with the provider before launch.
+
+The default field names are `name`, `email`, `message`, and the `website` honeypot. When selecting a provider, check its accepted field names, honeypot name, and required public hidden fields. Adjust the component's submitted names and the enhancement's field lookup together, retaining the `ContactValues` validation interface, accessible labels, and UI dictionary copy. Document that provider's requirements for the project; no provider is selected by this starter.
+
+The provider must enforce server-side validation and its own honeypot rules. Client validation can be bypassed, and a generic endpoint does not guarantee spam protection. A hidden `website` field only helps when the provider recognizes and rejects it; add the provider's supported protection if needed.
+
+Before launch, verify the endpoint, privacy copy, delivery and provider responses using that provider's approved testing process. For local template checks, intercept submission or use a local endpoint so no real message is sent. Ensure the hosting security policy permits the selected provider's form action; Docker and hosting configuration are handled separately.
