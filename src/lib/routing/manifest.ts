@@ -35,7 +35,7 @@ export function buildRouteManifest(
   const { defaultLocale } = config.i18n;
   const routes: RouteRecord[] = [];
   const identities = new Map<string, Map<string, ContentEntry>>();
-  const reserved = new Set(['blog', 'projects', ...locales]);
+  const reserved = new Set(['blog', 'projects', '__build', ...locales]);
   for (const entry of entries) {
     const locale = getEntryLocale(entry);
     if (!config.i18n.locales.includes(locale))

@@ -1,5 +1,6 @@
 ---
 import SiteHeader from '../components/SiteHeader.astro';
+import SeoHead from '../components/SeoHead.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { getSiteConfig } from '../lib/config/site.ts';
 import { getUi, localeDirection } from '../lib/i18n/ui.ts';
@@ -13,8 +14,19 @@ interface Props {
   locale: string;
   contentLocale?: string;
   route?: RouteRecord;
+  noindex?: boolean;
+  image?: string;
+  structuredData?: Record<string, unknown>;
 }
-const { title, description, locale, route } = Astro.props;
+const {
+  title,
+  description,
+  locale,
+  route,
+  noindex = false,
+  image,
+  structuredData,
+} = Astro.props;
 const site = getSiteConfig();
 const ui = await getUi(locale);
 const fontPath = withBase('/fonts/source-sans-3-latin.woff2', site);
@@ -25,9 +37,27 @@ const fontPath = withBase('/fonts/source-sans-3-latin.woff2', site);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+
     <meta name="color-scheme" content="light dark" />
-    <title>{title} | {site.name}</title>
+    <SeoHead
+      title={title}
+      description={description}
+      image={image}
+      structuredData={structuredData}
+      noindex={noindex}
+      route={
+        route ?? {
+          kind: 'page',
+          slug: 'not-found',
+          path: withBase('/404.html', site),
+          canonicalPath: withBase('/404.html', site),
+          locale,
+          contentLocale: locale,
+          fallback: false,
+          alternates: [],
+        }
+      }
+    />
     <link
       rel="icon"
       type="image/svg+xml"

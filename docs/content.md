@@ -46,7 +46,7 @@ structuredData:
   jobTitle: Designer
 ```
 
-All variants require `name`; optional `url` and every `sameAs` entry must be HTTP(S) URLs without embedded credentials. `Person` additionally permits `jobTitle`; `Organization` has no additional fields; `LocalBusiness` permits plain-text `address` and `telephone`. Unknown variant fields are rejected. No logo field is provided. Choose LocalBusiness only when the project brief requests it. The demo does not claim an organization or business identity. A later metadata layer translates `type` to JSON-LD `@type`; authoring this field alone does not render metadata.
+All variants require `name`; optional `url` and every `sameAs` entry must be HTTP(S) URLs without embedded credentials. `Person` additionally permits `jobTitle`; `Organization` has no additional fields; `LocalBusiness` permits plain-text `address` and `telephone`. Unknown variant fields are rejected. No logo field is provided. Choose LocalBusiness only when the project brief requests it. The demo does not claim an organization or business identity. The metadata layer validates this value again and translates `type` to JSON-LD `@type`. Page identities are opt-in; other pages emit WebPage data and posts emit Article data.
 
 ## Adding a collection
 
@@ -59,3 +59,15 @@ The shipped pages, welcome post, project description, and SVG are clearly marked
 ## Build fixtures
 
 Tests use `buildFixture` from `tests/helpers/build.ts`. It copies the project into a separate temporary directory, reuses installed dependencies, deep-merges `config` overrides (replacing arrays), writes the supplied project-relative `content` file overrides, and launches Astro through the running Node executable without a shell. It returns the exit code, stdout, stderr, output directory, and an async `dispose()` callback. Call `dispose()` after assertions. Paths must stay inside the fixture and cannot overwrite dependency or generated-cache directories. Tests may inject a temporary route to inspect real generated collection data; no test route is added to the starter's source.
+
+## Metadata and feeds
+
+`SeoHead.astro` derives the title, description, canonical, Open Graph image, Twitter card, and actual translation alternates from the route and public site config. Titles use `<page title> | <site name>`, retaining a title that already equals the site name or ends with that suffix. Posts emit Article JSON-LD with their ISO publication date and the configured author when present. Optional page identities use the validated variants above. JSON-LD escapes script delimiters and Unicode line separators before inline insertion; normal text and attributes use Astro escaping.
+
+A cover is processed through Astro's image pipeline for an absolute social image URL. Without a cover, use `defaultOgImage` from configuration. Root-relative assets are mounted under `base`; manifest routes already include `base` and are never prefixed again. The 404 page emits `noindex, follow` and is absent from sitemaps.
+
+Real translations have reciprocal hreflang links in HTML and sitemap entries. A missing translation renders its source content with a source canonical, emits no hreflang links, and is omitted from the sitemap. Drafts and disabled content sections do not enter discovery artifacts.
+
+The source guidance asks for RSS from posts and projects while also connecting RSS to the blog switch. This starter resolves that ambiguity explicitly: a feed exists only when both `features.blog` and `features.rss` are true. It contains published posts and enabled projects in the default locale only; fallback and translated duplicates are excluded. Items sort by publication date descending, then frontmatter slug, then entry ID. Titles and descriptions are plain text; keep frontmatter descriptions free of markup. RSS does not render Markdown/MDX bodies, run imported components, or add full-content HTML. XML escaping is handled by [`@astrojs/rss`](https://docs.astro.build/en/recipes/rss/).
+
+`robots.txt` advertises the absolute base-aware `sitemap.xml` URL. That file aliases the integration's index and references existing numbered sitemap parts. The `__build` path is reserved for internal build data and must never be used for public content or endpoint routes.

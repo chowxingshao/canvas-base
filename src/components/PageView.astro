@@ -33,6 +33,11 @@ const entries = Content
   locale={route.locale}
   contentLocale={route.contentLocale}
   route={route}
+  structuredData={
+    route.entry && 'structuredData' in route.entry.data
+      ? route.entry.data.structuredData
+      : undefined
+  }
 >
   <article
     class="page-content shell"

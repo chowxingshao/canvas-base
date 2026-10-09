@@ -202,7 +202,7 @@ describe('route manifest', () => {
       alternates: [{ locale: 'en', path: '/demo/about/' }],
     });
   });
-  it.each(['blog', 'projects', 'en', 'ms'])(
+  it.each(['blog', 'projects', '__build', 'en', 'ms'])(
     'rejects reserved page slug %s with a useful collision message',
     (slug) => {
       expect(() =>
