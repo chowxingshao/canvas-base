@@ -7,7 +7,7 @@ interface Props {
   locale: string;
   emptyLabel: string;
 }
-const { entries, locale, emptyLabel } = Astro.props;
+const { entries, emptyLabel } = Astro.props;
 ---
 
 {entries.length ? (
@@ -29,8 +29,12 @@ const { entries, locale, emptyLabel } = Astro.props;
             )}
             <div>
               {'publishedAt' in route.entry.data && (
-                <time datetime={route.entry.data.publishedAt.toISOString()}>
-                  {new Intl.DateTimeFormat(locale, {
+                <time
+                  lang={route.locale}
+                  dir={localeDirection(route.locale)}
+                  datetime={route.entry.data.publishedAt.toISOString()}
+                >
+                  {new Intl.DateTimeFormat(route.locale, {
                     dateStyle: 'medium',
                     timeZone: 'UTC',
                   }).format(route.entry.data.publishedAt)}

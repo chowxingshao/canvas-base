@@ -43,7 +43,11 @@ const entries = Content
       <h1>{title}</h1>
       <p class="lead">{description}</p>
       {route.entry && 'publishedAt' in route.entry.data && (
-        <time datetime={route.entry.data.publishedAt.toISOString()}>
+        <time
+          lang={route.locale}
+          dir={localeDirection(route.locale)}
+          datetime={route.entry.data.publishedAt.toISOString()}
+        >
           {new Intl.DateTimeFormat(route.locale, {
             dateStyle: 'long',
             timeZone: 'UTC',

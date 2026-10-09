@@ -91,6 +91,24 @@ describe('demonstration page output', () => {
     const arabic = await html(root, 'ar/about/index.html');
     expect(arabic).toMatch(/<html[^>]*lang="ar"[^>]*dir="rtl"/);
     expect(arabic).toMatch(/<article[^>]*lang="en"[^>]*dir="ltr"/);
+    for (const path of ['ar/blog/welcome/index.html', 'ar/blog/index.html']) {
+      const output = await html(root, path);
+      const sourceContent = output.match(
+        path.includes('welcome')
+          ? /<article\b[^>]*>/
+          : /<li\b[^>]*lang="en"[^>]*>/,
+      )?.[0];
+      expect.soft(sourceContent, path).toMatch(/\blang="en"/);
+      expect.soft(sourceContent, path).toMatch(/\bdir="ltr"/);
+      const date = output.match(/<time\b([^>]*)>([^<]*)<\/time>/);
+      expect.soft(date?.[1], path).toMatch(/\blang="ar"/);
+      expect.soft(date?.[1], path).toMatch(/\bdir="rtl"/);
+      expect
+        .soft(date?.[2], path)
+        .toContain(
+          path.includes('welcome') ? 'أكتوبر' : '08\u200f/10\u200f/2026',
+        );
+    }
     expect(await exists(root, 'ms/blog/index.html')).toBe(true);
     expect(await exists(root, 'ar/projects/example-project/index.html')).toBe(
       true,
