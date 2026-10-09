@@ -64,6 +64,7 @@ Versions were resolved from the npm registry on 2026-10-08. Every direct depende
 | `@astrojs/sitemap`         | 3.7.4         | Supply sitemap integration for the later SEO task.                                                  |
 | `@astrojs/rss`             | 4.0.19        | Supply static feed generation for the later SEO task.                                               |
 | `gsap`                     | 3.15.0        | Supply animation and ScrollTrigger APIs for the later motion task.                                  |
+| `sharp`                    | 0.35.5        | Process content images through Astro's real build-time Image pipeline under pnpm.                   |
 | `typescript`               | 6.0.3         | Type-check source with the newest stable release compatible with Astro check and TypeScript ESLint. |
 | `@astrojs/check`           | 0.9.10        | Diagnose Astro templates and their TypeScript.                                                      |
 | `@types/node`              | 24.19.1       | Type the Node 24 filesystem and tooling APIs.                                                       |

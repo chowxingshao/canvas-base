@@ -13,7 +13,9 @@
   "accessibility": {
     "skipContent": "Skip to content",
     "language": "Language",
-    "theme": "Color theme"
+    "theme": "Color theme",
+    "primaryNavigation": "Main navigation",
+    "footerNavigation": "Footer navigation"
   },
   "theme": {
     "light": "Light",
@@ -33,5 +35,8 @@
   "pagination": {
     "previous": "Previous",
     "next": "Next"
+  },
+  "notFound": {
+    "returnHome": "Return to the home page"
   }
 }

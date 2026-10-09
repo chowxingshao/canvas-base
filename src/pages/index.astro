@@ -1,24 +1,14 @@
 ---
+import PageView from '../components/PageView.astro';
+import { getRouteManifest } from '../lib/routing/manifest.ts';
 import { getSiteConfig } from '../lib/config/site.ts';
-import ui from '../content/ui.json';
-
-const site = getSiteConfig();
+const route = (await getRouteManifest()).find(
+  (route) =>
+    route.kind === 'page' &&
+    route.slug === 'home' &&
+    route.locale === getSiteConfig().i18n.defaultLocale,
+);
+if (!route) throw new Error('A published home page is required.');
 ---
 
-<!doctype html>
-<html lang={site.language}>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={site.description} />
-    <title>{site.name}</title>
-  </head>
-  <body>
-    <main>
-      <h1>{site.name}</h1>
-      <p>{site.description}</p>
-      <p>{ui.starter.demoNotice}</p>
-      <p>{ui.starter.nextStep}</p>
-    </main>
-  </body>
-</html>
+<PageView route={route} />

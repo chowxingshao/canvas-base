@@ -1,0 +1,53 @@
+---
+import { getSiteConfig } from '../lib/config/site.ts';
+import { getUi } from '../lib/i18n/ui.ts';
+import { getRouteManifest } from '../lib/routing/manifest.ts';
+interface Props {
+  locale: string;
+}
+const { locale } = Astro.props;
+const site = getSiteConfig();
+const ui = await getUi(locale);
+const routes = (await getRouteManifest()).filter(
+  (route) => route.locale === locale,
+);
+const links = [
+  {
+    route: routes.find(
+      (route) => route.kind === 'page' && route.slug === 'about',
+    ),
+    label: ui.nav.about,
+  },
+  {
+    route: routes.find((route) => route.kind === 'post-index'),
+    label: ui.nav.blog,
+  },
+  {
+    route: routes.find((route) => route.kind === 'project-index'),
+    label: ui.nav.projects,
+  },
+  {
+    route: routes.find(
+      (route) => route.kind === 'page' && route.slug === 'contact',
+    ),
+    label: ui.nav.contact,
+  },
+];
+---
+
+<footer class="site-footer shell">
+  <p class="site-name">{site.name}</p>
+  <p>{site.description}</p>
+  <nav aria-label={ui.accessibility.footerNavigation}>
+    <ul class="nav-list">
+      {links.map(
+        ({ route, label }) =>
+          route && (
+            <li>
+              <a href={route.path}>{label}</a>
+            </li>
+          ),
+      )}
+    </ul>
+  </nav>
+</footer>

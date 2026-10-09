@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import {
+  access,
   cp,
   mkdir,
   mkdtemp,
@@ -24,6 +25,19 @@ const omitted = new Set([
   'dist',
   'coverage',
 ]);
+
+export async function exists(
+  root: string,
+  relativePath: string,
+): Promise<boolean> {
+  try {
+    await access(resolveFixturePath(root, relativePath));
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+    throw error;
+  }
+}
 
 function isOmittedRoot(
   component: string,

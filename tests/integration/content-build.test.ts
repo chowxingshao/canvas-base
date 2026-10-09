@@ -8,8 +8,11 @@ const fixtures: Awaited<ReturnType<typeof buildFixture>>[] = [];
 afterEach(async () => {
   await Promise.all(fixtures.splice(0).map((fixture) => fixture.dispose()));
 });
-async function build(content: Record<string, string> = {}) {
-  const fixture = await buildFixture({ content });
+async function build(
+  content: Record<string, string> = {},
+  config?: Partial<SiteConfig>,
+) {
+  const fixture = await buildFixture({ content, config });
   fixtures.push(fixture);
   return fixture;
 }
@@ -35,19 +38,26 @@ const post = (slug: string, date: string, draft = false) =>
 
 describe('real Astro content builds', () => {
   it('loads Markdown, renders MDX, resolves images, and sorts published entries using frontmatter identities', async () => {
-    const fixture = await build({
-      'src/pages/content-test.json.ts': probe,
-      'src/content/posts/en/file-a.md': post('zulu', '2026-10-09'),
-      'src/content/posts/en/file-b.md': post('alpha', '2026-10-09'),
-      'src/content/posts/ms/translated-file.md': post('alpha', '2026-10-09'),
-      'src/content/posts/en/hidden.md': post('hidden', '2026-10-10', true),
-      'src/content/pages/en/hidden.md': post('hidden-page', '2026-10-10', true),
-      'src/content/projects/en/hidden.md': post(
-        'hidden-project',
-        '2026-10-10',
-        true,
-      ),
-    });
+    const fixture = await build(
+      {
+        'src/pages/content-test.json.ts': probe,
+        'src/content/posts/en/file-a.md': post('zulu', '2026-10-09'),
+        'src/content/posts/en/file-b.md': post('alpha', '2026-10-09'),
+        'src/content/posts/ms/translated-file.md': post('alpha', '2026-10-09'),
+        'src/content/posts/en/hidden.md': post('hidden', '2026-10-10', true),
+        'src/content/pages/en/hidden.md': post(
+          'hidden-page',
+          '2026-10-10',
+          true,
+        ),
+        'src/content/projects/en/hidden.md': post(
+          'hidden-project',
+          '2026-10-10',
+          true,
+        ),
+      },
+      { i18n: { defaultLocale: 'en', locales: ['en', 'ms'] } },
+    );
     expect(fixture.exitCode, fixture.stdout + fixture.stderr).toBe(0);
     const output = JSON.parse(
       await readFile(join(fixture.outputDir, 'content-test.json'), 'utf8'),

@@ -6,3 +6,7 @@ draft: false
 ---
 
 This is a demonstration contact page. Add approved contact details and configure a form endpoint if the project needs a contact form.
+
+## Start a conversation
+
+Replace this section with the project's preferred contact method and any useful information about what to include. A configured public email address appears below this content.

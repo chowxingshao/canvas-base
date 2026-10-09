@@ -1,0 +1,58 @@
+---
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { getSiteConfig } from '../lib/config/site.ts';
+import { getUi, localeDirection } from '../lib/i18n/ui.ts';
+import { withBase } from '../lib/routing/paths.ts';
+import type { RouteRecord } from '../lib/routing/types.ts';
+import '../styles/tokens.css';
+import '../styles/global.css';
+interface Props {
+  title: string;
+  description: string;
+  locale: string;
+  contentLocale?: string;
+  route?: RouteRecord;
+}
+const { title, description, locale, route } = Astro.props;
+const site = getSiteConfig();
+const ui = await getUi(locale);
+const fontPath = withBase('/fonts/source-sans-3-latin.woff2', site);
+---
+
+<!doctype html>
+<html lang={locale} dir={localeDirection(locale)}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title} | {site.name}</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href={withBase('/favicon.svg', site)}
+    />
+    <link
+      rel="preload"
+      href={fontPath}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style
+      is:inline
+      set:html={`@font-face { font-family: 'Source Sans 3'; src: url(${JSON.stringify(encodeURI(fontPath))}) format('woff2'); font-style: normal; font-weight: 200 900; font-display: swap; }`}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">
+      {ui.accessibility.skipContent}
+    </a>
+    <SiteHeader locale={locale} current={route} />
+    <main id="main-content" class="site-main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter locale={locale} />
+  </body>
+</html>
