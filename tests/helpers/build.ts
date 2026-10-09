@@ -9,7 +9,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { dirname, join, posix, relative, resolve, sep, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { siteConfig } from '../../site.config.ts';
 import type { SiteConfig } from '../../src/lib/config/schema.ts';
@@ -24,6 +24,35 @@ const omitted = new Set([
   'dist',
   'coverage',
 ]);
+
+function isOmittedRoot(
+  component: string,
+  platform: NodeJS.Platform = process.platform,
+): boolean {
+  return omitted.has(
+    platform === 'win32' ? component.toLowerCase() : component,
+  );
+}
+
+// Resolve and validate without I/O so rejected paths can be tested safely.
+export function resolveFixturePath(
+  root: string,
+  path: string,
+  platform: NodeJS.Platform = process.platform,
+): string {
+  const pathApi = platform === 'win32' ? win32 : posix;
+  const target = pathApi.resolve(root, path);
+  const withinRoot = pathApi.relative(root, target);
+  if (
+    pathApi.isAbsolute(withinRoot) ||
+    withinRoot === '..' ||
+    withinRoot.startsWith('..' + pathApi.sep) ||
+    isOmittedRoot(withinRoot.split(pathApi.sep)[0], platform)
+  ) {
+    throw new Error('Fixture paths must remain inside the temporary project.');
+  }
+  return target;
+}
 
 function deepMerge(
   base: Record<string, unknown>,
@@ -80,7 +109,7 @@ export async function buildFixture(
     await cp(projectRoot, root, {
       recursive: true,
       filter: (source) =>
-        !omitted.has(relative(projectRoot, source).split(sep)[0]),
+        !isOmittedRoot(relative(projectRoot, source).split(sep)[0]),
     });
     await symlink(
       join(projectRoot, 'node_modules'),
@@ -95,18 +124,7 @@ export async function buildFixture(
       );
     }
     for (const [path, contents] of Object.entries(options.content ?? {})) {
-      const target = resolve(root, path);
-      const withinRoot = relative(root, target);
-      if (
-        isAbsolute(withinRoot) ||
-        withinRoot === '..' ||
-        withinRoot.startsWith('..' + sep) ||
-        omitted.has(withinRoot.split(sep)[0])
-      ) {
-        throw new Error(
-          'Fixture paths must remain inside the temporary project.',
-        );
-      }
+      const target = resolveFixturePath(root, path);
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, contents);
     }
