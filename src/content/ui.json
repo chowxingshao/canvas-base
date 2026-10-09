@@ -1,0 +1,6 @@
+{
+  "starter": {
+    "demoNotice": "Demo values: replace the site identity and origin in site.config.ts.",
+    "nextStep": "Read docs/getting-started.md to configure your project."
+  }
+}

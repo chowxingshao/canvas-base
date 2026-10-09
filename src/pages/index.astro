@@ -1,0 +1,24 @@
+---
+import { getSiteConfig } from '../lib/config/site.ts';
+import ui from '../content/ui.json';
+
+const site = getSiteConfig();
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={site.description} />
+    <title>{site.name}</title>
+  </head>
+  <body>
+    <main>
+      <h1>{site.name}</h1>
+      <p>{site.description}</p>
+      <p>{ui.starter.demoNotice}</p>
+      <p>{ui.starter.nextStep}</p>
+    </main>
+  </body>
+</html>

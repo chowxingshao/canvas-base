@@ -1,0 +1,82 @@
+# Canvas Base
+
+A reusable static website starter built with Astro, strict TypeScript, Markdown/MDX, and plain CSS. Use it for content-focused sites such as portfolios, blogs, company introductions, resumes, and landing pages.
+
+This foundation includes validated public site configuration, a minimal static demo page, a build-only brief reader, and quality tools. The demo identity and origin are deliberately marked in `site.config.ts`. Author, email, social links, analytics, and form endpoint are empty.
+
+## Quick start
+
+Use Node **24.21.0** (`.nvmrc`) and pnpm **12.8.1** (`packageManager`). With those installed:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+## Commands
+
+| Command        | Purpose                                                                          |
+| -------------- | -------------------------------------------------------------------------------- |
+| `pnpm dev`     | Start the local Astro development server.                                        |
+| `pnpm preview` | Serve the existing production build locally.                                     |
+| `pnpm check`   | Run Astro diagnostics and TypeScript checking across scripts, config, and tests. |
+| `pnpm lint`    | Run ESLint and check formatting with Prettier.                                   |
+| `pnpm format`  | Format maintained source and documentation.                                      |
+| `pnpm test`    | Run the complete Vitest suite once.                                              |
+| `pnpm build`   | Generate static HTML in `dist/`.                                                 |
+
+Before finishing a change, run tests, lint, check, and build. `pnpm test tests/unit/config.test.ts` runs configuration tests only. Formatting excludes the immutable guidance snapshot and approved plan in `docs/superpowers/`.
+
+## Configuration and layers
+
+Edit `site.config.ts` for public identity and feature settings. Its validated reader rejects unsafe origins, mount paths, locale combinations, and form URLs. `url` is an HTTP(S) origin; `base` is an optional project mount that defaults to `/` and normalizes to leading/trailing slashes.
+
+The default flags are `blog: true`, `projects: true`, `rss: true`, `motion: true`, `i18n: false`, and `deploy: 'none'`. These are switches for the later feature modules; this foundational page has no blog, project, feed, motion, or deployment implementation.
+
+Infrastructure is the **fixed layer**: toolchain configuration, validation, build helpers, and template documentation. Visual presentation is the **variable layer**: pages, layouts, components, CSS, imagery, and motion choreography. Replace presentation for each client brief. UI copy belongs in content files such as `src/content/ui.json`.
+
+`readBrief(root)` loads `brief.md` as Markdown text at build/tooling time, returns `null` only for an absent file, and propagates other filesystem errors. Never import it into browser code. All site configuration is public; put no secrets in it.
+
+## Folder map
+
+```text
+site.config.ts          Public site identity and feature flags
+astro.config.mjs        Static build and MDX integration
+src/lib/config/         Public validation/reader and Node-only brief reader
+src/content/ui.json     Replaceable UI copy
+src/pages/index.astro   Minimal HTML demo
+tests/                  Unit tests and fresh configuration fixtures
+docs/                   Setup, architecture, and decisions
+```
+
+## Hosting
+
+`pnpm build` produces `dist/` for any static host, including Netlify, Vercel, and Cloudflare Pages. Configure their build command as `pnpm build` and publish directory as `dist`. GitHub Pages project sites also need their project path in `base`. Set the real public origin before deployment. With `deploy: 'none'`, this starter generates no deployment workflow.
+
+## Dependency matrix
+
+Versions were resolved from the npm registry on 2026-10-08. Every direct dependency has a purpose:
+
+| Dependency                 | Exact version | Reason                                                                                              |
+| -------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| `astro`                    | 7.3.7         | Build static HTML with typed Astro pages and content support.                                       |
+| `@astrojs/mdx`             | 8.0.3         | Compile MDX through Astro's supported integration.                                                  |
+| `@astrojs/sitemap`         | 3.7.4         | Supply sitemap integration for the later SEO task.                                                  |
+| `@astrojs/rss`             | 4.0.19        | Supply static feed generation for the later SEO task.                                               |
+| `gsap`                     | 3.15.0        | Supply animation and ScrollTrigger APIs for the later motion task.                                  |
+| `typescript`               | 6.0.3         | Type-check source with the newest stable release compatible with Astro check and TypeScript ESLint. |
+| `@astrojs/check`           | 0.9.10        | Diagnose Astro templates and their TypeScript.                                                      |
+| `@types/node`              | 24.19.1       | Type the Node 24 filesystem and tooling APIs.                                                       |
+| `eslint`                   | 10.12.0       | Run static source checks.                                                                           |
+| `@eslint/js`               | 10.0.1        | Provide ESLint's recommended JavaScript rules.                                                      |
+| `typescript-eslint`        | 8.71.1        | Parse and lint TypeScript with supported ESLint rules.                                              |
+| `eslint-plugin-astro`      | 3.2.1         | Parse and lint Astro templates.                                                                     |
+| `eslint-plugin-jsx-a11y-x` | 0.2.0         | Provide Astro accessibility rules compatible with ESLint 10.                                        |
+| `prettier`                 | 3.9.9         | Format source and documentation consistently.                                                       |
+| `prettier-plugin-astro`    | 1.1.0         | Format Astro templates.                                                                             |
+| `vitest`                   | 5.0.3         | Test application logic using Astro's Vite configuration.                                            |
+| `jsdom`                    | 30.1.2        | Provide a DOM environment for later motion and form behavior tests.                                 |
+
+React, a UI library, Tailwind, and backend adapters are absent. Zod is imported from the installed Astro version's supported `astro/zod` export. The pnpm lockfile freezes transitive resolutions. `pnpm-workspace.yaml` permits only esbuild's required install script, excludes the incompatible optional legacy JSX accessibility peer, and records the exact Astro release exception generated by pnpm's release-age policy.
+
+See [getting started](docs/getting-started.md), [architecture](docs/architecture.md), and the [dependency decision](docs/decisions/0003-dependencies.md).

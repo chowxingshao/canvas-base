@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+pnpm-lock.yaml
+.superpowers/
+.worktrees/
+# Immutable source guidance and approved implementation plan.
+docs/superpowers/
