@@ -49,3 +49,9 @@
     --color-focus: #b6ceff;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    will-change: transform, opacity;
+  }
+}

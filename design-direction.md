@@ -8,6 +8,6 @@ Self-hosted Source Sans 3 supplies upright variable weights 200–900 with font-
 
 Body text is 18px at the standard root size with 1.65 line height. Fluid headings span 36–64px. Reading text stays within 44rem, inside a 70rem shell. The spacing scale is 0.5, 1, 1.5, and 2.5rem, with fluid 3–6rem page sections. Simple navigation wraps naturally. Entry lists use separators and optional images rather than a fixed card system. Logical properties support both directions.
 
-Planned motion character: power2.out, 0.35–0.6 seconds, short vertical section entrances. No default pinning or cursor effects. Motion implementation belongs to Task 6; content is visible immediately and works without JavaScript.
+Motion character: power2.out, 0.35–0.6 seconds, short vertical section entrances. No default pinning or cursor effects. The Task 7 helper layer scopes every page animation and cleans it up during navigation; content is visible immediately and works without JavaScript or when reduced motion is requested.
 
 Normal text and blue links must meet WCAG AA contrast against their backgrounds in both schemes; verify the selected client palette again after every change. The skip link becomes visible on focus. Task 4 verification and outstanding quality evidence are recorded in docs/quality-report.md.

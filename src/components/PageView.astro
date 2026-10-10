@@ -42,10 +42,11 @@ const entries = Content
 >
   <article
     class="page-content shell"
+    data-page-motion
     lang={route.contentLocale}
     dir={localeDirection(route.contentLocale)}
   >
-    <header class="page-intro">
+    <header class="page-intro" data-reveal>
       <h1>{title}</h1>
       <p class="lead">{description}</p>
       {route.entry && 'publishedAt' in route.entry.data && (
@@ -64,14 +65,16 @@ const entries = Content
     {Content ? (
       <>
         {route.entry?.data.cover && (
-          <Image
-            src={route.entry.data.cover}
-            alt={route.entry.data.coverAlt!}
-            class="article-cover"
-            loading="lazy"
-          />
+          <div data-reveal>
+            <Image
+              src={route.entry.data.cover}
+              alt={route.entry.data.coverAlt!}
+              class="article-cover"
+              loading="lazy"
+            />
+          </div>
         )}
-        <div class="prose">
+        <div class="prose" data-reveal>
           <Content />
         </div>
         {route.kind === 'page' && route.slug === 'contact' && (
@@ -86,11 +89,19 @@ const entries = Content
         )}
       </>
     ) : (
-      <EntryList
-        entries={entries}
-        locale={route.locale}
-        emptyLabel={indexCopy.empty}
-      />
+      <div data-reveal>
+        <EntryList
+          entries={entries}
+          locale={route.locale}
+          emptyLabel={indexCopy.empty}
+        />
+      </div>
     )}
   </article>
 </BaseLayout>
+
+<script>
+  import { installPageMotionLifecycle } from '../scripts/page-motion.ts';
+
+  installPageMotionLifecycle(document);
+</script>

@@ -167,10 +167,13 @@ describe('static discovery output', () => {
         author: { name: 'Fixture Author' },
       });
       const identity = html(await read(root, 'identity/index.html'));
-      expect(identity.querySelectorAll('script')).toHaveLength(1);
-      expect(
-        JSON.parse(identity.querySelector('script')!.textContent!)['name'],
-      ).toBe('A </script><script>alert(1)</script> & B');
+      const identityJsonLd = [...identity.querySelectorAll('script')].find(
+        (script) => script.textContent?.includes('"@type":"Person"'),
+      );
+      expect(identityJsonLd).toBeDefined();
+      expect(JSON.parse(identityJsonLd!.textContent!)['name']).toBe(
+        'A </script><script>alert(1)</script> & B',
+      );
       const project = html(
         await read(root, 'projects/example-project/index.html'),
       );
