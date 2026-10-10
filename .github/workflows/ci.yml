@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Validate template
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/source workspace
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          path: source workspace
+          persist-credentials: false
+      - name: Set up pinned Node
+        id: node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: source workspace/.nvmrc
+          package-manager-cache: false
+      - name: Set up pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@12.8.1 --activate
+      - name: Locate pnpm store
+        id: store
+        run: printf 'path=%s\n' "$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - name: Cache pnpm store
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-pnpm-${{ hashFiles('source workspace/pnpm-lock.yaml') }}
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Check
+        run: pnpm check
+      - name: Test
+        run: pnpm test
+      - name: Build static site
+        run: pnpm build
+      - name: Build Docker image without publishing
+        run: docker build --tag canvas-base-ci:verified .
+      - name: Export verified image and Vercel output
+        run: |
+          mkdir -p .generated/ci
+          docker save --output .generated/ci/site-image.tar canvas-base-ci:verified
+          node --experimental-strip-types scripts/prepare-vercel.ts dist .generated/ci/vercel-output
+      - name: Upload verified static site
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-dist
+          path: source workspace/dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload verified Docker image
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-image
+          path: source workspace/.generated/ci/site-image.tar
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Upload verified Vercel output
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-vercel
+          path: source workspace/.generated/ci/vercel-output/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

@@ -6,3 +6,6 @@ pnpm-lock.yaml
 .worktrees/
 # Immutable source guidance and approved implementation plan.
 docs/superpowers/
+
+# Preserve the official Contributor Covenant 2.1 source verbatim.
+CODE_OF_CONDUCT.md

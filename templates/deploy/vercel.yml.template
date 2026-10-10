@@ -13,9 +13,8 @@ jobs:
     environment: production
     steps:
       - uses: actions/download-artifact@v7
-        with: { name: site-dist, path: dist }
-      - run: node --experimental-strip-types scripts/prepare-vercel.ts dist .vercel/output
-      - run: npx --yes vercel@50.11.0 deploy --prebuilt --prod --yes
+        with: { name: site-vercel, path: .vercel/output }
+      - run: npx --yes vercel@50.11.0 deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
