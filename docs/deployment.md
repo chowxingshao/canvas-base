@@ -15,6 +15,10 @@ styles, confines form submissions to the configured endpoint origin, and allows
 inline style attributes because GSAP writes transform and opacity there. Local
 HTTP deliberately has no HSTS header.
 
+## Hosted deployments
+
+Choose a target through `features.deploy` and run `pnpm configure:project` to generate exactly one workflow. The inactive templates document the required secrets and only deploy after the reusable CI workflow has verified a static artifact. Configure branch or tag protection and the production environment in the repository before enabling a deployment. Remote provider deployments and pull-request previews are intentionally unverified until a project selects a host and supplies its credentials.
+
 Set `formEndpoint` in `site.config.ts` to the provider's public HTTP(S) submission URL, then rebuild the static site. This value is shipped in HTML; do not put secret keys, credentials, or private tokens in it. Leave it empty to show a disabled form with the configuration notice.
 
 The configured form submits a native POST directly to the provider. It works with browser validation when JavaScript is disabled; optional local enhancement provides linked errors, an announcement, and focus on the first invalid field. The script does not fetch, log, or store submitted values. The provider controls delivery, confirmation pages, redirects, error responses, retention, and any consent requirements. Configure those with the provider before launch.

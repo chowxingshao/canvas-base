@@ -1,0 +1,22 @@
+name: Deploy to Vercel
+on:
+  push:
+    branches: ['{{BRANCH}}']
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - run: node --experimental-strip-types scripts/prepare-vercel.ts dist .vercel/output
+      - run: npx --yes vercel@50.11.0 deploy --prebuilt --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

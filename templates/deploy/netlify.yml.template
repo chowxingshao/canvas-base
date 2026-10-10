@@ -1,0 +1,20 @@
+name: Deploy to Netlify
+on:
+  push:
+    branches: ['{{BRANCH}}']
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - run: npx --yes netlify-cli@23.14.0 deploy --dir=dist --prod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

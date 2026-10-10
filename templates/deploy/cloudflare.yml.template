@@ -1,0 +1,21 @@
+name: Deploy to Cloudflare Pages
+on:
+  push:
+    branches: ['{{BRANCH}}']
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - run: npx --yes wrangler@4.55.0 pages deploy dist --project-name="$CLOUDFLARE_PAGES_PROJECT_NAME" --branch="{{BRANCH}}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
