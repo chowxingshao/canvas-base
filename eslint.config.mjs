@@ -7,6 +7,7 @@ export default [
     ignores: [
       'dist/**',
       '.astro/**',
+      '.generated/**',
       'node_modules/**',
       '.superpowers/**',
       '.worktrees/**',

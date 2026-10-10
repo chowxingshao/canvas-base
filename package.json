@@ -14,7 +14,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "build": "astro build"
+    "build": "astro build",
+    "verify:container": "node --experimental-strip-types scripts/verify-container.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "8.0.3",
