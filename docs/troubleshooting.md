@@ -26,3 +26,7 @@ CI installs frozen dependencies, then runs lint/check/test/build and Docker buil
 Deployment jobs require the reusable CI job and download its artifact. Check artifact name `site-dist`, repository/environment protection, and provider secrets. A local actionlint result checks workflow syntax and expressions; it does not prove a hosted GitHub run or provider deployment.
 
 If `pnpm configure:project` reports a generated file was modified, review that exact path and its ownership in `.canvas/generated.json`. Restore the generated file or deliberately resolve ownership after preserving authored changes. Never bypass the conflict by deleting arbitrary client files. See [deployment](deployment.md) and [brief workflow](brief.md).
+
+## Fresh acceptance failure
+
+`pnpm verify:fresh` prints its temporary destination and retains failed copies. Inspect the failed command there; never fix acceptance by editing the copy. Fix maintained source, then rerun the command. Installs need registry access or a populated pnpm store. On Windows run through pnpm so the script can resolve its native executable; it uses argument arrays without a command shell. Symlinks, populated destinations, and missing/tampered temporary ownership markers are intentionally rejected. No cleanup command removes arbitrary user directories. Docker verification requires a running local Linux-container daemon.

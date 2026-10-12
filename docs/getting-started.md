@@ -10,9 +10,9 @@ Keep `language` equal to `i18n.defaultLocale`, include the default in `i18n.loca
 
 Write the client brief in root `brief.md`. The build-only reader returns the original Markdown without interpreting it. An absent brief returns `null`; unreadable files and other filesystem problems remain errors.
 
-Use `pnpm format` while editing. Before completing a change, run `pnpm test`, `pnpm lint`, `pnpm check`, and `pnpm build`. Then `pnpm preview` serves `dist/`. The README documents all seven scripts.
+Use `pnpm format` while editing. Before completing a change, run `pnpm test`, `pnpm lint`, `pnpm check`, and `pnpm build`. Then `pnpm preview` serves `dist/`. The README and package manifest document all commands.
 
-This task supplies a minimal HTML demo. Additional motion, Docker, and deployment workflows arrive in their corresponding tasks. A flag being enabled does not add those modules by itself. The default OG image path is a configuration value; supply the actual image during the asset/SEO work.
+The starter supplies replaceable semantic pages, optional GSAP motion, static discovery files, an actual default OG image, and Docker serving. Deployment stays disabled until explicitly selected. Replace demonstration content, identity, and imagery before client launch.
 
 ## Configure the contact form
 
@@ -21,3 +21,7 @@ The contact page shows a disabled form and `Contact form is not configured yet.`
 Edit labels, required-field messages, and validation announcements under `contact` in `src/content/ui.json`, or the matching locale dictionary when internationalization is enabled. Contact page prose lives in `src/content/pages/en/contact.md`. The name, email, and message fields are required, and `website` is a hidden honeypot excluded from keyboard navigation and accessibility exposure.
 
 Select a provider and follow its field naming, confirmation, and spam protection requirements in [deployment guidance](deployment.md). Providers must validate submissions server-side and enforce their own honeypot rules; the generic endpoint and local validation do not guarantee spam protection. Use intercepted local submissions during starter testing.
+
+## Verify a new project
+
+Run `pnpm verify:fresh` for a release-quality template copy requiring no edits. For client work, complete [the brief](brief.md), select [a direction](design-directions.md), author [content](content.md), enable [languages](i18n.md) if needed, configure the public form endpoint above, then choose [deployment](deployment.md). Apply the [reviewed client governance checklist](../CONTRIBUTING.md#reviewed-checklist-for-client-copies). Inspect [quality evidence](quality-report.md) and rerun checks after replacing presentation.

@@ -17,7 +17,8 @@
     "test": "vitest run",
     "build": "astro build",
     "verify:container": "node --experimental-strip-types scripts/verify-container.ts",
-    "configure:project": "node --experimental-strip-types scripts/configure-project.ts"
+    "configure:project": "node --experimental-strip-types scripts/configure-project.ts",
+    "verify:fresh": "node --experimental-strip-types scripts/verify-fresh.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "8.0.3",

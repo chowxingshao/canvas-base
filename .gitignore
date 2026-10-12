@@ -11,3 +11,8 @@ dist/
 .DS_Store
 Thumbs.db
 coverage/
+
+.cache/
+test-results/
+playwright-report/
+*.tsbuildinfo

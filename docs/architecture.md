@@ -12,13 +12,13 @@ The root `site.config.ts` exports public identity and feature values. `src/lib/c
 
 ## Layer boundary
 
-The fixed layer owns the toolchain, config validation, routing/content/SEO/motion helpers when added, build tooling, and template documentation. Changes here should solve infrastructure problems or upgrade supported dependencies.
+The fixed layer owns the toolchain, config validation, routing/content/SEO/motion helpers, build tooling, and template documentation. Changes here should solve infrastructure problems or upgrade supported dependencies.
 
 The variable layer owns pages, layouts, components, styles, imagery, typography, and animation choreography. Replace it for each project. Keep UI copy in content files; the minimal page reads identity through the public config reader and instructional text from `src/content/ui.json`.
 
 Vitest uses Astro's documented `getViteConfig()` helper so supported exports such as `astro/zod` resolve in the test environment. Configuration fixtures clone the root values before merging feature overrides, preventing accidental state sharing.
 
-Sitemap and RSS generate static discovery artifacts; jsdom parses real built HTML/XML in typed integration tests. GSAP remains an intentional foundation for the motion task. No deployment workflows are generated while the deploy target is `none`.
+Sitemap and RSS generate static discovery artifacts; jsdom parses real built HTML/XML in typed integration tests. GSAP supplies scoped optional motion. No deployment workflows are generated while the deploy target is `none`.
 
 ## Metadata and discovery boundary
 
@@ -30,7 +30,7 @@ Sitemap and RSS generate static discovery artifacts; jsdom parses real built HTM
 
 After pages render, preparation reads that private artifact into an integration-local canonical map. The sitemap filter accepts only actual non-fallback canonical manifest records; serialization supplies only actual canonical translation links. No automatic locale cross-product is configured. Drafts, disabled sections, 404, endpoints, and private paths therefore stay outside the sitemap.
 
-`finalizeArtifacts(outputDir, config)` runs after sitemap generation, copies `sitemap-index.xml` to the advertised `sitemap.xml`, removes a disabled RSS placeholder, then deletes the exact private JSON file and its empty directory. Cleanup uses nonrecursive directory removal so unexpected data cannot be silently erased. Final static output has no `__build` artifact and is suitable for a future Docker stage that copies `dist/`. Docker configuration and nginx includes are introduced separately in Task 8.
+`finalizeArtifacts(outputDir, config)` runs after sitemap generation, copies `sitemap-index.xml` to the advertised `sitemap.xml`, removes a disabled RSS placeholder, then deletes the exact private JSON file and its empty directory. Cleanup uses nonrecursive directory removal so unexpected data cannot be silently erased. Final static output has no `__build` artifact. Finalization also emits security-header/location includes and a base-mounted static tree under `.generated/nginx/`, consumed by the production Docker image.
 
 ## Repository workflow and artifact boundary
 
@@ -39,3 +39,7 @@ After pages render, preparation reads that private artifact into an integration-
 `.github/workflows/ci.yml` exposes `workflow_call` alongside PR and main-push triggers. Its single validation job uses the pinned Node/pnpm versions and an OS/Node/lockfile-keyed pnpm store cache. Frozen installation, lint, check, test, build, and Docker build run in order. No step ignores failure. Only then does the default-success upload step publish `site-dist`; a missing output fails upload. CI also exports the built Docker image as `site-image` and prepares the static Vercel output from verified `dist/` as `site-vercel`. Optional deploy workflows depend on that reusable job and consume the matching artifact, including the exact Docker image for registry publication. No deployment job builds unchecked source. CI has `contents: read`, retains no checkout credentials, and never publishes an image or deploys a site.
 
 MIT licensing covers the template's code; third-party assets retain their own notices. Governance describes the upstream community and needs explicit review for client copies. Remote protection and private reporting are administrator settings, not effects of committing YAML or Markdown.
+
+## Release source boundary
+
+`scripts/verify-fresh.ts` copies authored release source into an owned temporary project, with no dependency junction. It excludes local state, credential directories, build/cache output, temporary evidence, and maintenance-only `docs/superpowers/`; the source guidance and plan remain unchanged in the maintenance repository. Fresh template copies keep governance and legal notices. Hash snapshots prove original and copied source remain unchanged through frozen install, check, lint, test, and build. This acceptance command is separate from the small copy-boundary integration tests to prevent recursion. Symlink sources and destination ancestors are rejected; cleanup validates the temporary parent, prefix, ownership marker, and real path.

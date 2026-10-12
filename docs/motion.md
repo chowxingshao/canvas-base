@@ -26,3 +26,5 @@ For a pinned or scrubbed section, make one timeline for the section, pass it thr
 For a page that enables Astro view transitions, keep the existing `astro:page-load` and `astro:before-swap` lifecycle hooks. Never create triggers at module scope. Test an active animation while changing `prefers-reduced-motion`; the cleanup must restore final visible content and leave no trigger behind.
 
 Keep `will-change` limited to elements carrying `data-reveal`, test interaction with links and forms during motion, and profile any added scene on a mid-range mobile emulation before shipping it.
+
+Optional scenes require their own browser performance evidence at mobile and desktop sizes; the default entrance does not certify heavier choreography. Verify preference changes during motion, restored content with JavaScript disabled, links/forms while moving, and zero owned triggers after navigation cleanup. See [quality evidence](quality-report.md) for the tested baseline and outstanding manual/device checks.

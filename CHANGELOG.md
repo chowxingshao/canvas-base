@@ -6,6 +6,8 @@ All notable template changes are documented here using Keep a Changelog conventi
 
 ### Added
 
+- Fresh release-source acceptance with credential/cache exclusions, owned temporary copies, source checksum preservation, complete gate execution, and final quality/handoff documentation.
+
 - Reusable CI with verified static artifact gating, repository issue/PR templates, maintainer ownership, dependency update groups, MIT licensing, and contribution/security/agent guidance.
 
 - Runnable static Astro starter with exact dependencies, strict TypeScript, linting, formatting, and Vitest.
