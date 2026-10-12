@@ -1,0 +1,57 @@
+/* Replace this demonstration direction with the approved client direction. */
+:root {
+  color-scheme: light dark;
+  --color-page: #f8f6f1;
+  --color-surface: #efede6;
+  --color-text: #242724;
+  --color-muted: #565b55;
+  --color-link: #2153b8;
+  --color-border: #c8cac1;
+  --color-focus: #17469f;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+  --font-size-body: 1.125rem;
+  --font-size-small: 1rem;
+  --font-size-title: clamp(2.25rem, 5.5vw, 4rem);
+  --font-size-heading: clamp(1.5rem, 3vw, 2rem);
+  --font-size-lead: clamp(1.25rem, 2vw, 1.5rem);
+  --weight-body: 400;
+  --weight-heading: 600;
+  --line-body: 1.65;
+  --line-title: 1.08;
+  --line-heading: 1.2;
+  --tracking-title: -0.025em;
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: clamp(3rem, 7vw, 6rem);
+  --space-page: clamp(1.25rem, 5vw, 3rem);
+  --width-site: 70rem;
+  --width-reading: 44rem;
+  --width-thumbnail: 16rem;
+  --height-main: 50vh;
+  --border-width: 1px;
+  --focus-width: 3px;
+  --focus-offset: 4px;
+  --link-underline: 0.08em;
+  --link-offset: 0.18em;
+  --skip-offset: 1rem;
+  --skip-layer: 10;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #1d211f;
+    --color-surface: #292f2b;
+    --color-text: #f3f1e9;
+    --color-muted: #bfc5bb;
+    --color-link: #a0bfff;
+    --color-border: #626a61;
+    --color-focus: #b6ceff;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    will-change: transform, opacity;
+  }
+}

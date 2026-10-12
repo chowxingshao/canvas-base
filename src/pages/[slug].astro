@@ -1,0 +1,22 @@
+---
+import PageView from '../components/PageView.astro';
+import { getRouteManifest } from '../lib/routing/manifest.ts';
+import { getSiteConfig } from '../lib/config/site.ts';
+import type { RouteRecord } from '../lib/routing/types.ts';
+export async function getStaticPaths() {
+  return (await getRouteManifest())
+    .filter(
+      (route) =>
+        route.kind === 'page' &&
+        route.slug !== 'home' &&
+        route.locale === getSiteConfig().i18n.defaultLocale,
+    )
+    .map((route) => ({ params: { slug: route.slug }, props: { route } }));
+}
+interface Props {
+  route: RouteRecord;
+}
+const { route } = Astro.props;
+---
+
+<PageView route={route} />

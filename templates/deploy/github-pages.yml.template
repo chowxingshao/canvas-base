@@ -1,0 +1,21 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: ['{{BRANCH}}']
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: { name: github-pages }
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - uses: actions/upload-pages-artifact@v4
+        with: { path: dist }
+      - uses: actions/deploy-pages@v4

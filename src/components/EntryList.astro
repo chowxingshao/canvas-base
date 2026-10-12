@@ -1,0 +1,54 @@
+---
+import { Image } from 'astro:assets';
+import { localeDirection } from '../lib/i18n/ui.ts';
+import type { RouteRecord } from '../lib/routing/types.ts';
+interface Props {
+  entries: RouteRecord[];
+  locale: string;
+  emptyLabel: string;
+}
+const { entries, emptyLabel } = Astro.props;
+---
+
+{entries.length ? (
+  <ul class="entry-list">
+    {entries.map(
+      (route) =>
+        route.entry && (
+          <li
+            lang={route.contentLocale}
+            dir={localeDirection(route.contentLocale)}
+          >
+            {route.entry.data.cover && (
+              <Image
+                src={route.entry.data.cover}
+                alt={route.entry.data.coverAlt!}
+                class="entry-cover"
+                loading="lazy"
+              />
+            )}
+            <div>
+              {'publishedAt' in route.entry.data && (
+                <time
+                  lang={route.locale}
+                  dir={localeDirection(route.locale)}
+                  datetime={route.entry.data.publishedAt.toISOString()}
+                >
+                  {new Intl.DateTimeFormat(route.locale, {
+                    dateStyle: 'medium',
+                    timeZone: 'UTC',
+                  }).format(route.entry.data.publishedAt)}
+                </time>
+              )}
+              <h2>
+                <a href={route.path}>{route.entry.data.title}</a>
+              </h2>
+              <p>{route.entry.data.description}</p>
+            </div>
+          </li>
+        ),
+    )}
+  </ul>
+) : (
+  <p>{emptyLabel}</p>
+)}

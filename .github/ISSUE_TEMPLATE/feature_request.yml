@@ -1,0 +1,22 @@
+name: Feature request
+description: Propose a reusable improvement to the template.
+title: '[Feature]: '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and users affected
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain whether this belongs in the fixed infrastructure or a client presentation.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Include dependency, accessibility, and migration implications where relevant.

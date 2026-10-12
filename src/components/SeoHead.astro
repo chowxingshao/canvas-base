@@ -1,0 +1,60 @@
+---
+import { getImage } from 'astro:assets';
+import { getSiteConfig } from '../lib/config/site.ts';
+import {
+  buildMetadata,
+  absoluteRouteUrl,
+  type SeoInput,
+} from '../lib/seo/metadata.ts';
+import { feedEnabled } from '../lib/seo/feed.ts';
+import { withBase } from '../lib/routing/paths.ts';
+interface Props extends SeoInput {
+  noindex?: boolean;
+}
+const { noindex = false, ...input } = Astro.props;
+const config = getSiteConfig();
+const cover = input.route.entry?.data.cover;
+const image =
+  input.image ??
+  (cover ? (await getImage({ src: cover, width: 1200 })).src : undefined);
+const metadata = buildMetadata({ ...input, image }, config);
+const isArticle = input.route.kind === 'post';
+---
+
+<title>{metadata.title}</title>
+<meta name="description" content={metadata.description} />
+<link rel="canonical" href={metadata.canonical} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+{metadata.alternates.map((alternate) => (
+  <link rel="alternate" hreflang={alternate.locale} href={alternate.url} />
+))}
+<meta property="og:type" content={isArticle ? 'article' : 'website'} />
+<meta property="og:title" content={metadata.title} />
+<meta property="og:description" content={metadata.description} />
+<meta property="og:url" content={metadata.canonical} />
+<meta property="og:image" content={metadata.image} />
+<meta property="og:site_name" content={config.name} />
+<meta property="og:locale" content={metadata.locale.replace(/-/g, '_')} />
+{metadata.alternates
+  .filter((alternate) => alternate.locale !== metadata.locale)
+  .map((alternate) => (
+    <meta
+      property="og:locale:alternate"
+      content={alternate.locale.replace(/-/g, '_')}
+    />
+  ))}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={metadata.title} />
+<meta name="twitter:description" content={metadata.description} />
+<meta name="twitter:image" content={metadata.image} />
+{feedEnabled(config) && (
+  <link
+    rel="alternate"
+    type="application/rss+xml"
+    title={config.name}
+    href={absoluteRouteUrl(withBase('/rss.xml', config), config)}
+  />
+)}
+{metadata.jsonLd && (
+  <script type="application/ld+json" is:inline set:html={metadata.jsonLd} />
+)}

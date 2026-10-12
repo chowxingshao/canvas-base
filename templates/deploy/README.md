@@ -1,0 +1,9 @@
+# Optional deployment workflows
+
+`pnpm configure:project` copies exactly one inactive template to `.github/workflows/deploy.yml` when `features.deploy` selects a target. It never guesses a provider or creates a workflow for `none`.
+
+Each workflow calls the reusable CI workflow for verified build artifacts. Netlify, Cloudflare, and Pages download `site-dist`; Vercel downloads CI's `site-vercel` prebuilt output; the Docker registry workflow loads CI's saved `site-image` and publishes stable version tags plus latest without rebuilding source. Repository administrators must protect the production branch or release tags and configure environment protection before deploying. Same-repository preview behavior is gated by the `ENABLE_PREVIEWS` repository variable. Fork pull requests never receive deployment credentials.
+
+Set only the documented secrets after selecting a host: Netlify `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`; Vercel `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`; Cloudflare `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, with `CLOUDFLARE_PAGES_PROJECT_NAME` as a repository variable. Pages and GHCR use scoped `GITHUB_TOKEN` permissions. For Netlify, Vercel, or Cloudflare previews, set `ENABLE_PREVIEWS=true`, configure the `preview` environment, and follow [preview setup](../../docs/deployment.md#pull-request-previews). Preview URL comments are posted or updated only after a successful same-repository preview deployment.
+
+Before enabling Vercel previews, establish a successful production push through the generated production job. The preview job verifies its project, ready production target, and push/repository metadata through Vercel's API and fails closed without that evidence. A project's first CLI deployment can otherwise become production even without `--prod`; see the linked preview setup for bootstrap instructions.

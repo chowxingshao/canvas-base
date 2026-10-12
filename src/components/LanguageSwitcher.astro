@@ -1,0 +1,42 @@
+---
+import { getUi } from '../lib/i18n/ui.ts';
+import { getRouteManifest } from '../lib/routing/manifest.ts';
+import type { RouteRecord } from '../lib/routing/types.ts';
+interface Props {
+  current: RouteRecord;
+  locales: string[];
+}
+const { current, locales } = Astro.props;
+const ui = await getUi(current.locale);
+const routes = await getRouteManifest();
+const links = locales.map((locale) => ({
+  locale,
+  route: routes.find(
+    (route) =>
+      route.kind === current.kind &&
+      route.slug === current.slug &&
+      route.locale === locale,
+  ),
+  label:
+    new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale,
+}));
+---
+
+<nav class="language-switcher" aria-label={ui.accessibility.language}>
+  <ul class="nav-list">
+    {links.map(
+      ({ locale, route, label }) =>
+        route && (
+          <li>
+            <a
+              href={route.path}
+              lang={locale}
+              aria-current={locale === current.locale ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          </li>
+        ),
+    )}
+  </ul>
+</nav>

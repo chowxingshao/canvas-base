@@ -1,0 +1,10 @@
+.git
+.superpowers
+.worktrees
+node_modules
+dist
+.astro
+.generated
+.env
+.env.*
+coverage

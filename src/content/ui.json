@@ -1,0 +1,66 @@
+{
+  "starter": {
+    "demoNotice": "Demo values: replace the site identity and origin in site.config.ts.",
+    "nextStep": "Read docs/getting-started.md to configure your project."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "blog": "Blog",
+    "projects": "Projects"
+  },
+  "accessibility": {
+    "skipContent": "Skip to content",
+    "language": "Language",
+    "theme": "Color theme",
+    "primaryNavigation": "Main navigation",
+    "footerNavigation": "Footer navigation"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Articles and updates.",
+    "empty": "No articles published yet."
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "Selected work and projects.",
+    "empty": "No projects published yet."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "notFound": {
+    "returnHome": "Return to the home page"
+  },
+  "contact": {
+    "legend": "Send a message",
+    "required": "All fields are required.",
+    "submit": "Send message",
+    "website": "Website",
+    "unconfigured": "Contact form is not configured yet.",
+    "invalid": "Please review the highlighted fields.",
+    "spam": "Unable to submit this message.",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "required": "Enter your name."
+      },
+      "email": {
+        "label": "Email",
+        "required": "Enter your email address.",
+        "invalid": "Enter a valid email address."
+      },
+      "message": {
+        "label": "Message",
+        "required": "Enter a message."
+      }
+    }
+  }
+}

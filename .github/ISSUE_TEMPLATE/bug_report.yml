@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible template problem.
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For suspected vulnerabilities, read SECURITY.md; do not disclose them in a public issue.
+        Remove credentials, personal data, and client brief details from evidence.
+  - type: input
+    id: version
+    attributes:
+      label: Template version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node/pnpm versions, browser, and Docker version if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include minimal public configuration and commands.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Include failed check output or visual evidence when relevant.

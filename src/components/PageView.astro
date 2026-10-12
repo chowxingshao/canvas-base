@@ -1,0 +1,107 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryList from './EntryList.astro';
+import ContactForm from './ContactForm.astro';
+import { getSiteConfig } from '../lib/config/site.ts';
+import { getUi, localeDirection } from '../lib/i18n/ui.ts';
+import { getRouteManifest } from '../lib/routing/manifest.ts';
+import type { RouteRecord } from '../lib/routing/types.ts';
+interface Props {
+  route: RouteRecord;
+}
+const { route } = Astro.props;
+const ui = await getUi(route.locale);
+const site = getSiteConfig();
+const indexCopy = route.kind === 'post-index' ? ui.blog : ui.projects;
+const title = route.entry?.data.title ?? indexCopy.title;
+const description = route.entry?.data.description ?? indexCopy.description;
+const rendered = route.entry ? await render(route.entry) : undefined;
+const Content = rendered?.Content;
+const entries = Content
+  ? []
+  : (await getRouteManifest()).filter(
+      (entry) =>
+        entry.locale === route.locale &&
+        entry.kind === (route.kind === 'post-index' ? 'post' : 'project'),
+    );
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={route.locale}
+  contentLocale={route.contentLocale}
+  route={route}
+  structuredData={
+    route.entry && 'structuredData' in route.entry.data
+      ? route.entry.data.structuredData
+      : undefined
+  }
+>
+  <article
+    class="page-content shell"
+    data-page-motion
+    lang={route.contentLocale}
+    dir={localeDirection(route.contentLocale)}
+  >
+    <header class="page-intro" data-reveal>
+      <h1>{title}</h1>
+      <p class="lead">{description}</p>
+      {route.entry && 'publishedAt' in route.entry.data && (
+        <time
+          lang={route.locale}
+          dir={localeDirection(route.locale)}
+          datetime={route.entry.data.publishedAt.toISOString()}
+        >
+          {new Intl.DateTimeFormat(route.locale, {
+            dateStyle: 'long',
+            timeZone: 'UTC',
+          }).format(route.entry.data.publishedAt)}
+        </time>
+      )}
+    </header>
+    {Content ? (
+      <>
+        {route.entry?.data.cover && (
+          <div data-reveal>
+            <Image
+              src={route.entry.data.cover}
+              alt={route.entry.data.coverAlt!}
+              class="article-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
+        <div class="prose" data-reveal>
+          <Content />
+        </div>
+        {route.kind === 'page' && route.slug === 'contact' && (
+          <div lang={route.locale} dir={localeDirection(route.locale)}>
+            <ContactForm endpoint={site.formEndpoint} ui={ui} />
+          </div>
+        )}
+        {route.kind === 'page' && route.slug === 'contact' && site.email && (
+          <p>
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
+        )}
+      </>
+    ) : (
+      <div data-reveal>
+        <EntryList
+          entries={entries}
+          locale={route.locale}
+          emptyLabel={indexCopy.empty}
+        />
+      </div>
+    )}
+  </article>
+</BaseLayout>
+
+<script>
+  import { installPageMotionLifecycle } from '../scripts/page-motion.ts';
+
+  installPageMotionLifecycle(document);
+</script>

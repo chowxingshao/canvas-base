@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+peerDependencyRules:
+  ignoreMissing:
+    - eslint-plugin-jsx-a11y
+minimumReleaseAgeExclude:
+  - astro@7.3.7

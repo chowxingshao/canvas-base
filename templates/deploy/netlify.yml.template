@@ -1,0 +1,72 @@
+name: Deploy to Netlify
+on:
+  pull_request:
+    branches: ['{{BRANCH}}']
+  push:
+    branches: ['{{BRANCH}}']
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - run: npx --yes netlify-cli@23.14.0 deploy --dir=dist --prod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  preview:
+    needs: verify
+    if: github.event_name == 'pull_request' && vars.ENABLE_PREVIEWS == 'true' && github.event.pull_request.head.repo.full_name == github.repository && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: netlify-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-dist, path: dist }
+      - name: Deploy verified preview
+        id: publish
+        run: |
+          npx --yes netlify-cli@23.14.0 deploy --dir=dist --no-build --json > deploy.json
+          url="$(jq -er '.deploy_url' deploy.json)"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Post or update preview URL
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+        with:
+          script: |
+            const url = new URL(process.env.PREVIEW_URL);
+            if (url.protocol !== 'https:' || url.username || url.password) {
+              throw new Error('Expected an HTTPS preview URL without credentials.');
+            }
+            const marker = '<!-- canvas-preview:netlify -->';
+            const body = marker + '\nPreview: ' + process.env.PREVIEW_URL;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: context.issue.number,
+            });
+            const existing = comments.find(comment =>
+              comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: context.issue.number, body,
+              });
+            }
