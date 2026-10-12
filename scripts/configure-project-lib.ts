@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
 import {
-  access,
   lstat,
   mkdir,
   readFile,
@@ -8,7 +7,7 @@ import {
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { dirname, relative, resolve, sep } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import type { SiteConfig } from '../src/lib/config/schema.ts';
 
 type Manifest = { files: Record<string, string> };
@@ -28,17 +27,23 @@ function safeRelative(path: string): void {
 function contained(root: string, path: string): string {
   const target = resolve(root, path);
   const within = relative(root, target);
-  if (!within || within === '..' || within.startsWith(`..${sep}`))
+  if (
+    !within ||
+    isAbsolute(within) ||
+    within === '..' ||
+    within.startsWith(`..${sep}`)
+  )
     throw new Error(`Generated path escapes project root: ${path}`);
   return target;
 }
 
 async function exists(path: string): Promise<boolean> {
   try {
-    await access(path);
+    await lstat(path);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+    throw error;
   }
 }
 
@@ -48,18 +53,33 @@ async function rejectSymlinkAncestors(
 ): Promise<void> {
   const relativePath = relative(root, target);
   let current = root;
-  for (const component of relativePath.split(sep)) {
+  const components = relativePath.split(sep);
+  for (const [index, component] of components.entries()) {
     current = resolve(current, component);
     if (!(await exists(current))) continue;
-    if ((await lstat(current)).isSymbolicLink())
+    const stat = await lstat(current);
+    if (stat.isSymbolicLink())
       throw new Error(
         `Generated path crosses a symbolic link: ${relativePath}`,
+      );
+    if (index < components.length - 1 && !stat.isDirectory())
+      throw new Error(
+        `Generated path has a non-directory ancestor: ${relativePath}`,
       );
   }
 }
 
+async function checkedPath(root: string, path: string): Promise<string> {
+  safeRelative(path);
+  const target = contained(root, path);
+  await rejectSymlinkAncestors(root, target);
+  if ((await exists(target)) && !(await lstat(target)).isFile())
+    throw new Error(`Generated file path is not a regular file: ${path}`);
+  return target;
+}
+
 async function loadManifest(root: string): Promise<Manifest> {
-  const path = contained(root, manifestPath);
+  const path = await checkedPath(root, manifestPath);
   if (!(await exists(path))) return { files: {} };
   const parsed: unknown = JSON.parse(await readFile(path, 'utf8'));
   if (
@@ -75,6 +95,8 @@ async function loadManifest(root: string): Promise<Manifest> {
   for (const [path, hash] of Object.entries(parsed.files)) {
     safeRelative(path);
     contained(root, path);
+    if (path === manifestPath)
+      throw new Error('Generated-file manifest cannot own itself.');
     if (typeof hash !== 'string' || !/^[a-f0-9]{64}$/.test(hash))
       throw new Error(`Invalid generated-file hash for ${path}.`);
     files[path] = hash;
@@ -87,8 +109,7 @@ async function readOwned(
   path: string,
   expected: string,
 ): Promise<void> {
-  const target = contained(root, path);
-  await rejectSymlinkAncestors(root, target);
+  const target = await checkedPath(root, path);
   if (
     !(await exists(target)) ||
     sha256(await readFile(target, 'utf8')) !== expected
@@ -123,28 +144,25 @@ export async function configureProject(options: {
   validateBranch(branch);
   const manifest = await loadManifest(root);
   const desired = new Map<string, string>();
-  const additions = new Set<string>();
   const removals = new Set<string>();
   const brief = 'brief.md';
-  const briefTarget = contained(root, brief);
+  const briefTarget = await checkedPath(root, brief);
   if (!(await exists(briefTarget))) {
     desired.set(
       brief,
-      await readFile(contained(root, 'brief.template.md'), 'utf8'),
+      await readFile(await checkedPath(root, 'brief.template.md'), 'utf8'),
     );
-    additions.add(brief);
   }
 
   if (options.config.features.i18n) {
     const dictionary = await readFile(
-      contained(root, 'src/content/ui.json'),
+      await checkedPath(root, 'src/content/ui.json'),
       'utf8',
     );
     for (const locale of options.config.i18n.locales) {
       const path = `src/i18n/${locale}.json`;
-      if (!(await exists(contained(root, path)))) {
+      if (!(await exists(await checkedPath(root, path)))) {
         desired.set(path, dictionary);
-        additions.add(path);
       }
     }
   } else {
@@ -159,37 +177,52 @@ export async function configureProject(options: {
     const template = `templates/deploy/${options.config.features.deploy}.yml.template`;
     desired.set(
       workflow,
-      (await readFile(contained(root, template), 'utf8')).replaceAll(
+      (await readFile(await checkedPath(root, template), 'utf8')).replaceAll(
         '{{BRANCH}}',
         branch,
       ),
     );
-    if (!(await exists(contained(root, workflow)))) additions.add(workflow);
   }
 
   for (const [path, hash] of Object.entries(manifest.files))
     if (desired.has(path) || removals.has(path))
       await readOwned(root, path, hash);
 
+  // Complete every safety/collision check before the first filesystem mutation.
+  const writes: Array<{
+    path: string;
+    target: string;
+    content: string;
+    present: boolean;
+  }> = [];
+  const next = { ...manifest.files };
+  for (const path of new Set([...desired.keys(), ...removals])) {
+    const target = await checkedPath(root, path);
+    const existsAlready = await exists(target);
+    if (desired.has(path) && existsAlready && !manifest.files[path])
+      throw new Error(
+        `Unowned generated file already exists: ${path}. Preserve it and resolve the collision before rerunning setup.`,
+      );
+    if (desired.has(path)) {
+      const content = desired.get(path)!;
+      if (!existsAlready || (await readFile(target, 'utf8')) !== content)
+        writes.push({ path, target, content, present: existsAlready });
+      next[path] = sha256(content);
+    }
+  }
+
   const created: string[] = [];
   const updated: string[] = [];
   const removed: string[] = [];
-  const next = { ...manifest.files };
   for (const path of removals) {
     await rm(contained(root, path));
     delete next[path];
     removed.push(path);
   }
-  for (const [path, content] of desired) {
-    const target = contained(root, path);
-    await rejectSymlinkAncestors(root, target);
-    const present = await exists(target);
-    if (!present || (await readFile(target, 'utf8')) !== content) {
-      await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, content);
-      (present ? updated : created).push(path);
-    }
-    next[path] = sha256(content);
+  for (const { path, target, content, present } of writes) {
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, content);
+    (present ? updated : created).push(path);
   }
   if (Object.keys(next).length) {
     const target = contained(root, manifestPath);

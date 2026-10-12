@@ -4,6 +4,11 @@ All notable template changes are documented here using Keep a Changelog conventi
 
 ## [Unreleased]
 
+### Fixed
+
+- Project setup preserves unowned workflows and completes containment, ownership, directory-collision, and symbolic-link preflight before writes or removals, including dangling manifest links and Windows cross-drive paths.
+- Netlify, Vercel, and Cloudflare templates implement opt-in same-repository PR previews from verified CI artifacts and update preview URL comments while skipping fork credentials and preserving production deployment gates.
+
 ### Added
 
 - Fresh release-source acceptance with credential/cache exclusions, owned temporary copies, source checksum preservation, complete gate execution, and final quality/handoff documentation.

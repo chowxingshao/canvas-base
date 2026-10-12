@@ -1,5 +1,7 @@
 name: Deploy to Vercel
 on:
+  pull_request:
+    branches: ['{{BRANCH}}']
   push:
     branches: ['{{BRANCH}}']
 permissions:
@@ -9,6 +11,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
   deploy:
     needs: verify
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -19,3 +22,52 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  preview:
+    needs: verify
+    if: github.event_name == 'pull_request' && vars.ENABLE_PREVIEWS == 'true' && github.event.pull_request.head.repo.full_name == github.repository && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: vercel-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/download-artifact@v7
+        with: { name: site-vercel, path: .vercel/output }
+      - name: Deploy verified preview
+        id: publish
+        run: |
+          url="$(npx --yes vercel@50.11.0 deploy --prebuilt --yes --token="$VERCEL_TOKEN")"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Post or update preview URL
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+        with:
+          script: |
+            const url = new URL(process.env.PREVIEW_URL);
+            if (url.protocol !== 'https:' || url.username || url.password) {
+              throw new Error('Expected an HTTPS preview URL without credentials.');
+            }
+            const marker = '<!-- canvas-preview:vercel -->';
+            const body = marker + '\nPreview: ' + process.env.PREVIEW_URL;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo, issue_number: context.issue.number,
+            });
+            const existing = comments.find(comment =>
+              comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo, comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: context.issue.number, body,
+              });
+            }
