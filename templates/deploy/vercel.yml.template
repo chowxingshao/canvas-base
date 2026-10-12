@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v7
         with: { name: site-vercel, path: .vercel/output }
-      - run: npx --yes vercel@50.11.0 deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
+      - run: npx --yes vercel@50.11.0 deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN" --meta canvasGithubEvent=push --meta canvasGithubRepository="$GITHUB_REPOSITORY"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -34,6 +34,40 @@ jobs:
       group: vercel-preview-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
+      - name: Require established production push
+        id: bootstrap
+        uses: actions/github-script@v8
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        with:
+          script: |
+            for (const key of ['VERCEL_TOKEN', 'VERCEL_ORG_ID', 'VERCEL_PROJECT_ID', 'GITHUB_REPOSITORY']) {
+              if (!process.env[key]) throw new Error('Missing Vercel production bootstrap configuration: ' + key);
+            }
+            const url = new URL('https://api.vercel.com/v7/deployments');
+            url.search = new URLSearchParams({
+              projectId: process.env.VERCEL_PROJECT_ID,
+              teamId: process.env.VERCEL_ORG_ID,
+              target: 'production', state: 'READY', limit: '100',
+            }).toString();
+            const response = await fetch(url, {
+              headers: { Authorization: 'Bearer ' + process.env.VERCEL_TOKEN },
+              redirect: 'error', signal: AbortSignal.timeout(10000),
+            });
+            if (!response.ok) throw new Error('Vercel production bootstrap check failed: HTTP ' + response.status);
+            const data = await response.json();
+            if (!Array.isArray(data.deployments)) throw new Error('Invalid Vercel production bootstrap response.');
+            const established = data.deployments.some(deployment =>
+              deployment.projectId === process.env.VERCEL_PROJECT_ID &&
+              deployment.target === 'production' && deployment.readyState === 'READY' &&
+              deployment.meta?.canvasGithubEvent === 'push' &&
+              deployment.meta?.canvasGithubRepository === process.env.GITHUB_REPOSITORY &&
+              !deployment.meta?.githubPrId);
+            if (!established) {
+              throw new Error('Bootstrap Vercel with a successful production push before enabling PR previews.');
+            }
       - uses: actions/download-artifact@v7
         with: { name: site-vercel, path: .vercel/output }
       - name: Deploy verified preview

@@ -6,6 +6,8 @@ All notable template changes are documented here using Keep a Changelog conventi
 
 ### Fixed
 
+- Vercel previews require an API-verified successful production push bootstrap, preventing a PR from becoming a new project's first production deployment.
+
 - Project setup preserves unowned workflows and completes containment, ownership, directory-collision, and symbolic-link preflight before writes or removals, including dangling manifest links and Windows cross-drive paths.
 - Netlify, Vercel, and Cloudflare templates implement opt-in same-repository PR previews from verified CI artifacts and update preview URL comments while skipping fork credentials and preserving production deployment gates.
 

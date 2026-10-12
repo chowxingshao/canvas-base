@@ -8,6 +8,7 @@ const { parse } = createRequire(import.meta.resolve('astro'))('yaml') as {
   parse: (source: string) => Workflow;
 };
 type Step = {
+  id?: string;
   uses?: string;
   env?: Record<string, string>;
   with?: { script?: string; name?: string };
@@ -108,8 +109,10 @@ describe.each(['netlify', 'vercel', 'cloudflare'])(
       async (existing) => {
         const preview = (await workflow(provider)).jobs.preview;
         expect(preview).toBeDefined();
-        const comment = preview.steps!.find((step) =>
-          step.uses?.startsWith('actions/github-script@'),
+        const comment = preview.steps!.find(
+          (step) =>
+            step.uses?.startsWith('actions/github-script@') &&
+            step.env?.PREVIEW_URL,
         )!;
         expect(comment).toBeDefined();
         const requests: Array<{
@@ -166,3 +169,116 @@ describe.each(['netlify', 'vercel', 'cloudflare'])(
     );
   },
 );
+
+describe('Vercel production bootstrap', () => {
+  const production = {
+    uid: 'dpl_production',
+    projectId: 'prj_site',
+    target: 'production',
+    readyState: 'READY',
+    meta: { canvasGithubEvent: 'push', canvasGithubRepository: 'owner/site' },
+  };
+
+  it.each([
+    ['new project', [], false],
+    ['ready production push', [production], true],
+    ['preview deployment', [{ ...production, target: null }], false],
+    ['failed production', [{ ...production, readyState: 'ERROR' }], false],
+    [
+      'PR production',
+      [
+        {
+          ...production,
+          meta: { ...production.meta, canvasGithubEvent: 'pull_request' },
+        },
+      ],
+      false,
+    ],
+    ['unattributed production', [{ ...production, meta: {} }], false],
+    [
+      'another repository',
+      [
+        {
+          ...production,
+          meta: { ...production.meta, canvasGithubRepository: 'other/site' },
+        },
+      ],
+      false,
+    ],
+    ['another project', [{ ...production, projectId: 'prj_other' }], false],
+  ])(
+    'blocks deployment without established non-PR production: %s',
+    async (_label, deployments, allowed) => {
+      const steps = (await workflow('vercel')).jobs.preview.steps!;
+      const bootstrap = steps.find((step) => step.id === 'bootstrap');
+      expect(bootstrap).toBeDefined();
+      expect(steps.indexOf(bootstrap!)).toBeLessThan(
+        steps.findIndex((step) => step.id === 'publish'),
+      );
+      const requests: Array<{ url: string; options: unknown }> = [];
+      const fetch = async (url: URL, options: unknown) => {
+        requests.push({ url: url.toString(), options });
+        return { ok: true, json: async () => ({ deployments }) };
+      };
+      const execute = new Function(
+        'fetch',
+        'process',
+        `return (async () => { ${bootstrap!.with!.script} })()`,
+      );
+      const result = execute(fetch, {
+        env: {
+          VERCEL_TOKEN: 'test-token',
+          VERCEL_ORG_ID: 'team_owner',
+          VERCEL_PROJECT_ID: 'prj_site',
+          GITHUB_REPOSITORY: 'owner/site',
+        },
+      });
+      if (allowed) await expect(result).resolves.toBeUndefined();
+      else await expect(result).rejects.toThrow(/production.*push|bootstrap/i);
+      const url = new URL(requests[0].url);
+      expect(url.origin + url.pathname).toBe(
+        'https://api.vercel.com/v7/deployments',
+      );
+      expect(Object.fromEntries(url.searchParams)).toEqual({
+        projectId: 'prj_site',
+        teamId: 'team_owner',
+        target: 'production',
+        state: 'READY',
+        limit: '100',
+      });
+    },
+  );
+
+  it.each(['api error', 'network error', 'malformed response'])(
+    'fails closed on %s',
+    async (failure) => {
+      const bootstrap = (await workflow('vercel')).jobs.preview.steps!.find(
+        (step) => step.id === 'bootstrap',
+      );
+      expect(bootstrap).toBeDefined();
+      const fetch = async () => {
+        if (failure === 'network error') throw new Error('network error');
+        return {
+          ok: failure !== 'api error',
+          status: 403,
+          json: async () => ({}),
+        };
+      };
+      const execute = new Function(
+        'fetch',
+        'process',
+        `return (async () => { ${bootstrap!.with!.script} })()`,
+      );
+      await expect(
+        execute(fetch, {
+          env: {
+            VERCEL_TOKEN: 'test-token',
+            VERCEL_ORG_ID: 'team_owner',
+            VERCEL_PROJECT_ID: 'prj_site',
+            GITHUB_REPOSITORY: 'owner/site',
+          },
+        }),
+      ).rejects.toThrow();
+    },
+  );
+});
