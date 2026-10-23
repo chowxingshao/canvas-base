@@ -1,0 +1,23 @@
+# Normalize line endings so checkouts and Prettier agree on every platform.
+# Without this, Windows checkouts (core.autocrlf=true) produce CRLF files that
+# fail `pnpm lint` (Prettier defaults to LF) and `pnpm verify:fresh`.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.mp4 binary
+*.webm binary
+*.mov binary
+*.pdf binary
+*.zip binary

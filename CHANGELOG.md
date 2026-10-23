@@ -4,8 +4,13 @@ All notable template changes are documented here using Keep a Changelog conventi
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidated agent guidance into a single `CLAUDE.md` and removed `AGENTS.md`; README and architecture references now point only to `CLAUDE.md`.
+
 ### Fixed
 
+- Added `.gitattributes` to normalize line endings to LF, so Windows checkouts (`core.autocrlf=true`) no longer produce CRLF files that fail `pnpm lint` and `pnpm verify:fresh`.
 - Vercel previews require an API-verified successful production push bootstrap, preventing a PR from becoming a new project's first production deployment.
 
 - Project setup preserves unowned workflows and completes containment, ownership, directory-collision, and symbolic-link preflight before writes or removals, including dangling manifest links and Windows cross-drive paths.

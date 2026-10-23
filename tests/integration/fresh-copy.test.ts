@@ -30,7 +30,7 @@ describe('fresh release source boundary', () => {
     for (const path of [
       'src/page.astro',
       'README.md',
-      'AGENTS.md',
+      'CLAUDE.md',
       'LICENSE',
       '.github/workflows/ci.yml',
       '.env.example',
@@ -63,7 +63,7 @@ describe('fresh release source boundary', () => {
     expect(Object.keys(before)).toEqual([
       '.env.example',
       '.github/workflows/ci.yml',
-      'AGENTS.md',
+      'CLAUDE.md',
       'LICENSE',
       'README.md',
       'docs/content.md',

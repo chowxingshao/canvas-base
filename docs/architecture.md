@@ -34,7 +34,7 @@ After pages render, preparation reads that private artifact into an integration-
 
 ## Repository workflow and artifact boundary
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) defines the shared human/agent maintenance workflow; [AGENTS.md](../AGENTS.md) and [CLAUDE.md](../CLAUDE.md) reference it and this architecture. Fixed-layer maintenance and variable-layer client authoring have different purposes but share static output, accessibility, public config, dependency, and validation requirements.
+[CONTRIBUTING.md](../CONTRIBUTING.md) defines the shared human/agent maintenance workflow; [CLAUDE.md](../CLAUDE.md) references it and this architecture. Fixed-layer maintenance and variable-layer client authoring have different purposes but share static output, accessibility, public config, dependency, and validation requirements.
 
 `.github/workflows/ci.yml` exposes `workflow_call` alongside PR and main-push triggers. Its single validation job uses the pinned Node/pnpm versions and an OS/Node/lockfile-keyed pnpm store cache. Frozen installation, lint, check, test, build, and Docker build run in order. No step ignores failure. Only then does the default-success upload step publish `site-dist`; a missing output fails upload. CI also exports the built Docker image as `site-image` and prepares the static Vercel output from verified `dist/` as `site-vercel`. Optional deploy workflows depend on that reusable job and consume the matching artifact, including the exact Docker image for registry publication. No deployment job builds unchecked source. CI has `contents: read`, retains no checkout credentials, and never publishes an image or deploys a site.
 
