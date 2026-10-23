@@ -25,3 +25,5 @@ Select a provider and follow its field naming, confirmation, and spam protection
 ## Verify a new project
 
 Run `pnpm verify:fresh` for a release-quality template copy requiring no edits. For client work, complete [the brief](brief.md), select [a direction](design-directions.md), author [content](content.md), enable [languages](i18n.md) if needed, configure the public form endpoint above, then choose [deployment](deployment.md). Apply the [reviewed client governance checklist](../CONTRIBUTING.md#reviewed-checklist-for-client-copies). Inspect [quality evidence](quality-report.md) and rerun checks after replacing presentation.
+
+To pull later improvements from Canvas Base into a copy started from this template, follow [UPDATING.md](../UPDATING.md).
