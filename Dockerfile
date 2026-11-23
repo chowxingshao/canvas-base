@@ -7,7 +7,7 @@ RUN pnpm install --frozen-lockfile
 COPY . ./
 RUN pnpm build
 
-FROM nginx:1.29-alpine
+FROM nginx:1.31-alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/.generated/nginx/html /usr/share/nginx/html
